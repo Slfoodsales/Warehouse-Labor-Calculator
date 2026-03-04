@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Warehouse Labor Cost Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #0f1f3d;
+      --navy-mid: #1a2f52;
+      --blue: #2563eb;
+      --blue-light: #3b82f6;
+      --accent: #f59e0b;
+      --accent-light: #fef3c7;
+      --green: #059669;
+      --green-light: #d1fae5;
+      --surface: #f8fafc;
+      --card: #ffffff;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --subtle: #94a3b8;
+      --font: 'DM Sans', sans-serif;
+      --mono: 'DM Mono', monospace;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--surface);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    header {
+      background: var(--navy);
+      padding: 28px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    header .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    header .icon {
+      width: 42px; height: 42px;
+      background: var(--blue);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    header h1 {
+      color: #fff;
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      margin-top: 2px;
+    }
+
+    .export-btn {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-family: var(--font);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s;
+    }
+    .export-btn:hover { background: #047857; }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 36px 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 768px) {
+      main { grid-template-columns: 1fr; padding: 20px 16px; }
+      header { padding: 20px 16px; }
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+
+    .card:last-child { margin-bottom: 0; }
+
+    .section-title {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .step-badge {
+      width: 24px; height: 24px;
+      background: #dbeafe;
+      color: var(--blue);
+      border-radius: 50%;
+      font-size: 0.7rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label { font-size: 0.78rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .field .hint { font-size: 0.72rem; color: var(--subtle); margin-bottom: 2px; }
+
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .input-wrap:focus-within { border-color: var(--blue); box-shadow: 0 0 0 3px #dbeafe; }
+
+    .input-wrap .adorn {
+      padding: 9px 12px;
+      background: #f1f5f9;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-family: var(--mono);
+      border-right: 1.5px solid var(--border);
+      white-space: nowrap;
+    }
+    .input-wrap .adorn.right { border-right: none; border-left: 1.5px solid var(--border); }
+
+    .input-wrap input {
+      flex: 1;
+      padding: 9px 12px;
+      border: none;
+      outline: none;
+      font-family: var(--mono);
+      font-size: 0.9rem;
+      color: var(--text);
+      background: transparent;
+      min-width: 0;
+    }
+
+    /* Results */
+    .result-highlight {
+      background: var(--blue);
+      border-radius: 12px;
+      padding: 20px;
+      color: #fff;
+      margin-bottom: 14px;
+    }
+    .result-highlight .rl { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #93c5fd; margin-bottom: 4px; }
+    .result-highlight .rv { font-size: 2.4rem; font-weight: 700; font-family: var(--mono); line-height: 1; }
+    .result-highlight .rs { font-size: 0.75rem; color: #bfdbfe; margin-top: 4px; }
+
+    .result-row {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px;
+      background: var(--surface);
+      border-radius: 10px;
+      margin-bottom: 10px;
+      border: 1px solid var(--border);
+    }
+    .result-row:last-child { margin-bottom: 0; }
+    .result-row .rl { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+    .result-row .rv { font-size: 1.3rem; font-weight: 700; font-family: var(--mono); color: var(--text); }
+    .result-row .rs { font-size: 0.7rem; color: var(--subtle); margin-top: 1px; }
+
+    .spend-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    .spend-cell {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px 10px;
+      text-align: center;
+    }
+    .spend-cell .sl { font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--subtle); margin-bottom: 6px; }
+    .spend-cell .sv { font-size: 1.25rem; font-weight: 700; font-family: var(--mono); color: var(--text); }
+
+    .notice {
+      background: var(--accent-light);
+      border: 1px solid #fcd34d;
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .notice .nt { font-size: 0.82rem; font-weight: 700; color: #92400e; margin-bottom: 8px; }
+    .notice ul { padding-left: 16px; }
+    .notice li { font-size: 0.75rem; color: #a16207; margin-bottom: 4px; }
+    .notice .np { font-size: 0.72rem; color: #b45309; margin-top: 8px; }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: var(--subtle);
+      font-size: 0.75rem;
+      border-top: 1px solid var(--border);
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="icon">🏭</div>
+    <div>
+      <h1>Warehouse Labor Cost Calculator</h1>
+      <p>Manual picking operation — labor costs only</p>
+    </div>
+  </div>
+  <button class="export-btn" onclick="exportCSV()">
+    ⬇ Export to CSV
+  </button>
+</header>
+
+<main>
+  <!-- LEFT COLUMN: Inputs -->
+  <div>
+    <!-- Workforce -->
+    <div class="card">
+      <div class="section-title"><span class="step-badge">1</span> Workforce</div>
+      <div class="grid-2">
+        <div class="field">
+          <label># of Pickers</label>
+          <div class="input-wrap">
+            <input type="number" id="pickers" value="5" min="0" oninput="calc()"/>
+            <span class="adorn right">people</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Picker Wage</label>
+          <div class="input-wrap">
+            <span class="adorn">$</span>
+            <input type="number" id="pickerWage" value="18" min="0" oninput="calc()"/>
+            <span class="adorn right">/hr</span>
+          </div>
+        </div>
+        <div class="field">
+          <label># of Packers</label>
+          <div class="input-wrap">
+            <input type="number" id="packers" value="3" min="0" oninput="calc()"/>
+            <span class="adorn right">people</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Packer Wage</label>
+          <div class="input-wrap">
+            <span class="adorn">$</span>
+            <input type="number" id="packerWage" value="17" min="0" oninput="calc()"/>
+            <span class="adorn right">/hr</span>
+          </div>
+        </div>
+      </div>
+      <div class="field" style="margin-top:14px">
+        <label>Benefits &amp; Burden Rate</label>
+        <div class="hint">Includes payroll taxes, health insurance, etc. Typically 20–35%</div>
+        <div class="input-wrap">
+          <input type="number" id="benefits" value="25" min="0" max="100" oninput="calc()"/>
+          <span class="adorn right">%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Schedule -->
+    <div class="card">
+      <div class="section-title"><span class="step-badge">2</span> Schedule</div>
+      <div class="grid-2">
+        <div class="field">
+          <label>Hours per Day</label>
+          <div class="input-wrap">
+            <input type="number" id="hours" value="8" min="0" oninput="calc()"/>
+            <span class="adorn right">hrs</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Days per Week</label>
+          <div class="input-wrap">
+            <input type="number" id="days" value="5" min="0" max="7" oninput="calc()"/>
+            <span class="adorn right">days</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Volume -->
+    <div class="card">
+      <div class="section-title"><span class="step-badge">3</span> Daily Order Volume</div>
+      <div class="field">
+        <label>Orders per Day</label>
+        <div class="input-wrap">
+          <input type="number" id="orders" value="200" min="0" oninput="calc()"/>
+          <span class="adorn right">orders</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Avg Lines per Order</label>
+        <div class="hint">Each line = a unique SKU on the order</div>
+        <div class="input-wrap">
+          <input type="number" id="lines" value="3" min="0" oninput="calc()"/>
+          <span class="adorn right">lines</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>Avg Units per Line</label>
+        <div class="input-wrap">
+          <input type="number" id="units" value="2" min="0" oninput="calc()"/>
+          <span class="adorn right">units</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: Results -->
+  <div>
+    <div class="card">
+      <div class="section-title">Cost Per Transaction</div>
+
+      <div class="result-highlight">
+        <div class="rl">Cost per Order</div>
+        <div class="rv" id="r-order">$0.00</div>
+        <div class="rs" id="r-order-sub">200 orders/day</div>
+      </div>
+
+      <div class="result-row">
+        <div>
+          <div class="rl">Cost per Line Item</div>
+          <div class="rs" id="r-line-sub">600 lines/day</div>
+        </div>
+        <div class="rv" id="r-line">$0.00</div>
+      </div>
+
+      <div class="result-row">
+        <div>
+          <div class="rl">Cost per Unit</div>
+          <div class="rs" id="r-unit-sub">1,200 units/day</div>
+        </div>
+        <div class="rv" id="r-unit">$0.00</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="section-title">Total Labor Spend</div>
+      <div class="spend-grid">
+        <div class="spend-cell">
+          <div class="sl">Daily</div>
+          <div class="sv" id="r-daily">$0</div>
+        </div>
+        <div class="spend-cell">
+          <div class="sl">Weekly</div>
+          <div class="sv" id="r-weekly">$0</div>
+        </div>
+        <div class="spend-cell">
+          <div class="sl">Annual</div>
+          <div class="sv" id="r-annual">$0</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="notice">
+      <div class="nt">💡 What this doesn't include</div>
+      <ul>
+        <li>Supervision / indirect labor</li>
+        <li>Equipment (forklifts, carts, scanners)</li>
+        <li>Facility overhead (rent, utilities)</li>
+        <li>Packaging materials</li>
+        <li>Errors, returns &amp; rework</li>
+      </ul>
+      <div class="np">Adding these typically increases true cost by <strong>40–80%</strong>.</div>
+    </div>
+  </div>
+</main>
+
+<footer>Warehouse Labor Cost Calculator &mdash; For internal use only</footer>
+
+<script>
+  function v(id) { return parseFloat(document.getElementById(id).value) || 0; }
+  function fmt(n) { return '$' + n.toFixed(2); }
+  function fmtK(n) { return n >= 1000 ? '$' + (n/1000).toFixed(1) + 'k' : '$' + Math.round(n); }
+  function num(n) { return n.toLocaleString(); }
+
+  function calc() {
+    const pickers = v('pickers'), packers = v('packers');
+    const pWage = v('pickerWage'), pkWage = v('packerWage');
+    const burden = 1 + v('benefits') / 100;
+    const hours = v('hours'), days = v('days');
+    const orders = v('orders'), lines = v('lines'), units = v('units');
+
+    const laborPerDay = (pickers * pWage + packers * pkWage) * burden * hours;
+    const laborPerWeek = laborPerDay * days;
+    const laborPerYear = laborPerWeek * 52;
+
+    const totalLines = orders * lines;
+    const totalUnits = totalLines * units;
+
+    const costPerOrder = orders > 0 ? laborPerDay / orders : 0;
+    const costPerLine = totalLines > 0 ? laborPerDay / totalLines : 0;
+    const costPerUnit = totalUnits > 0 ? laborPerDay / totalUnits : 0;
+
+    document.getElementById('r-order').textContent = fmt(costPerOrder);
+    document.getElementById('r-order-sub').textContent = num(orders) + ' orders/day';
+    document.getElementById('r-line').textContent = fmt(costPerLine);
+    document.getElementById('r-line-sub').textContent = num(totalLines) + ' lines/day';
+    document.getElementById('r-unit').textContent = fmt(costPerUnit);
+    document.getElementById('r-unit-sub').textContent = num(totalUnits) + ' units/day';
+    document.getElementById('r-daily').textContent = fmtK(laborPerDay);
+    document.getElementById('r-weekly').textContent = fmtK(laborPerWeek);
+    document.getElementById('r-annual').textContent = fmtK(laborPerYear);
+
+    window._results = { costPerOrder, costPerLine, costPerUnit, laborPerDay, laborPerWeek, laborPerYear };
+  }
+
+  function exportCSV() {
+    const r = window._results || {};
+    const rows = [
+      ['Input', 'Value'],
+      ['Pickers', v('pickers')],
+      ['Packers', v('packers')],
+      ['Picker Wage ($/hr)', v('pickerWage')],
+      ['Packer Wage ($/hr)', v('packerWage')],
+      ['Benefits Rate (%)', v('benefits')],
+      ['Hours per Day', v('hours')],
+      ['Days per Week', v('days')],
+      ['Orders per Day', v('orders')],
+      ['Lines per Order', v('lines')],
+      ['Units per Line', v('units')],
+      [],
+      ['Output', 'Value'],
+      ['Cost per Order ($)', (r.costPerOrder||0).toFixed(2)],
+      ['Cost per Line ($)', (r.costPerLine||0).toFixed(2)],
+      ['Cost per Unit ($)', (r.costPerUnit||0).toFixed(2)],
+      ['Daily Labor Cost ($)', (r.laborPerDay||0).toFixed(2)],
+      ['Weekly Labor Cost ($)', (r.laborPerWeek||0).toFixed(2)],
+      ['Annual Labor Cost ($)', (r.laborPerYear||0).toFixed(2)],
+    ];
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'warehouse_labor_costs.csv';
+    a.click(); URL.revokeObjectURL(url);
+  }
+
+  calc();
+</script>
+</body>
+</html>
